@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<!-- 打印查询语句 -->
+		<setting name="logImpl" value="STDOUT_LOGGING" />
+	</settings>
+	<!-- 设置pojo类型别名 -->
+	<typeAliases>
+		<!-- 为指定包下的所有类设置默认别名，MyBatis默认的设置别名的方式就是去除类所在的包后的简单的类名 -->
+		<package name="com.demo.entity"/>
+	</typeAliases>
+
+</configuration>

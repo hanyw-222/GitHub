@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.dao.IUserSerDao">
+
+    <!--根据用户ID查询用户-->
+    <select id="queryUserById" resultType="User">
+        select  * from user where userId = #{userId}
+    </select>
+<!--查看问诊记录详情-->
+    <select id="queryAskDetialById" resultType="Onlineconsultingrec">
+        select * from onlineconsultingrec where inquiryId = #{inquiryId}
+    </select>
+
+<!--//问诊报告-->
+    <resultMap type="Onlineconsultingrec" id="inquiryResultMap">
+        <id column="inquiryId" property="inquiryId"/>
+        <result column="userId" property="userId"/>
+        <result column="doctorId" property="doctorId"/>
+        <result column="inquiryTime" property="inquiryTime"/>
+        <result column="inquiryData" property="inquiryData"/>
+        <result column="onlineAskPaper" property="onlineAskPaper"/>
+        <result column="state" property="state"/>
+        <result column="replyData" property="replyData"/>
+        <!-- 一对一关联映射 -->
+        <association property="doctor"  javaType="Doctor">
+            <result column="doctorId" property="doctorId"/>
+            <result column="doctorName" property="doctorName"/>
+            <result column="sex" property="sex"/>
+            <result column="department" property="department"/>
+            <result column="headAdd" property="headAdd"/>
+        </association>
+    </resultMap>
+
+    <!--分页根据用户ID查询咨询报告-->
+    <select id="queryInquiryByUserId"  resultMap="inquiryResultMap">
+        SELECT onlineconsultingrec.*,doctorres.* FROM onlineconsultingrec,doctorres  where userId = #{userId} and onlineconsultingrec.doctorId = doctorres.doctorId
+        limit #{startRow},#{row4Page}
+    </select>
+    <!--查询该用户ID查询咨询报告总数-->
+    <select id="queryInquiryByUserIdCount"  resultType="int">
+        SELECT count(*) FROM Onlineconsultingrec  where userId = #{userId}
+    </select>
+
+
+    <!--    增加健康报告    -->
+    <insert id="insertHealthReport">
+        Insert into healthrec (userId,weight,height,smoking,drinking,diet,excretion,allergy)
+        value (#{userId},#{weight},#{height},#{smoking},#{drinking},#{diet},#{excretion},#{allergy});
+    </insert>
+
+    <!--    更新个人信息  -->
+    <update id="updateUserInfor">
+        update user set userName=#{userName},sex=#{sex},date=#{date},
+        phone=#{phone},homeAdd=#{homeAdd},headAdd= #{headAdd} where userId=#{userId};
+    </update>
+
+    <!--查询具有指定标签的药品总数-->
+    <select id="queryMediByLabelCount"  parameterType="String"  resultType="int">
+        SELECT count(*) FROM medicine  where medicineLabel like '%${label}%'
+    </select>
+    <!--按分页条件查询具有指定标签的药品-->
+    <select id="queryMediListByLabel" resultType="Medicine">
+        SELECT * FROM medicine  where medicineLabel like '%${label}%'
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <!--按分页条件查询具有指定功效的药品总数-->
+    <select id="queryMediByEffCount"  parameterType="String"  resultType="int">
+        SELECT count(*) FROM medicine  where medicineEffect like '%${symptom}%'
+    </select>
+<!--按分页条件查询具有指定功效的药品-->
+    <select id="queryMediListByEff" resultType="Medicine">
+        SELECT * FROM medicine  where medicineEffect like '%${symptom}%'
+        limit #{startRow},#{row4Page}
+    </select>
+    <!--按条件分页查询所有药品-->
+    <select id="queryAllMediList" resultType="Medicine">
+        SELECT * FROM medicine
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <!--按查询所有药品数量-->
+    <select id="queryAllMediCount" resultType="int">
+        SELECT count(*) FROM medicine
+    </select>
+
+    <!--医生注册-->
+    <insert id="insertAskForm" >
+        <selectKey keyProperty="inquiryId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID() as inquiryId
+        </selectKey>
+        Insert into onlineconsultingrec (userId,doctorId,inquiryTime,inquiryData,onlineAskPaper,state) value (#{userId},#{doctorId},#{nowDate},#{cons},#{examineAdd},#{state})
+    </insert>
+    <!--查询用户是否存在-->
+<!--查询妇科医生-->
+   <select id="queryDoc" resultType="Doctor">
+       select  * from doctorres where department = #{department};
+   </select>
+
+    <!--按条件分页查询所有医生-->
+    <select id="queryUserList" resultType="Doctor">
+        SELECT * FROM doctorres where check_2=1
+        limit #{startRow},#{row4Page}
+    </select>
+    <!--按ID查询医生 -->
+    <select id="queryDocById" resultType="doctor">
+        select * from  doctorres where doctorId = #{id};
+    </select>
+    <!--按条件查询医生的数量-->
+    <select id="queryAllUserCount"  resultType="int">
+        SELECT count(*) FROM doctorres where check_2=1
+    </select>
+    <!--按条件查询某部门医生的数量-->
+    <select id="queryAlldepartmentCount" parameterType="String" resultType="int">
+        SELECT count(*) FROM doctorres where department = #{department} and check_2=1
+    </select>
+
+    <!--按条件分页查询某部门所有医生-->
+    <select id="queryDepartmentList" resultType="Doctor">
+        SELECT * FROM doctorres where department = #{department} and check_2=1
+        limit #{startRow},#{row4Page}
+    </select>
+
+
+<!--    //韩-->
+
+    <!--    增加上门服务申请    -->
+    <insert id="insertAssign">
+        Insert into visitapply (RootId,doctorId,userId,applyIntro,applyTime,is_checked)
+        value (#{rootId},#{doctorId},#{userId},#{applyIntro},#{applyTime},#{is_checked});
+    </insert>
+
+
+    <!--按条件分页查询所有医生-->
+    <select id="queryDocList" parameterType="int" resultType="Doctor">
+        Select * From doctorres Where hosId in (#{type1},#{type2}) and check_2=1
+        limit #{startRow},#{row4Page}
+    </select>
+    <!--按条件查询医生的数量-->
+    <select id="queryDocCount" parameterType="int" resultType="int">
+        Select count(*) From doctorres Where hosId in(#{type1},#{type2}) and check_2=1
+
+    </select>
+
+    <select id="queryAllDocList" resultType="Doctor">
+        Select * From doctorres where check_2 = 1
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <select id="queryAllDocCount" resultType="int">
+        Select count(*) From doctorres where check_2 = 1
+    </select>
+
+    <!--   分页查询社区信息     -->
+    <select id="queryComList" resultType="Community">
+        Select * From community
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <select id="queryComCount" resultType="int">
+        Select count(*) From community
+    </select>
+
+
+    <!--   分页查询养老机构信息     -->
+    <select id="queryPensionList" resultType="Pension">
+        Select * From pensionage
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <select id="queryPensionCount" resultType="int">
+        Select count(*) From pensionage
+    </select>
+
+</mapper>

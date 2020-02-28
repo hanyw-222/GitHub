@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   	xmlns:p="http://www.springframework.org/schema/p"
+		xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+        http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+">
+
+	<!-- 扫描com.demo.controller下所有Controller类 -->
+	<context:component-scan base-package="com.demo.controller" />
+	
+	<!-- 启动注解驱动 -->
+	<mvc:annotation-driven conversion-service="conversionService" />
+
+	<!--配置拦截器-->
+	<mvc:interceptors>
+		<!--  使用bean定义一个Interceptor，直接定义在mvc:interceptors根下面的Interceptor将拦截所有的请求   -->
+		<!-- <bean class="com.bybo.aca.web.interceptor.Login"/> -->
+		<mvc:interceptor>
+			<!-- 进行拦截：/**表示拦截所有controller -->
+			<mvc:mapping path="/**" />
+			<!-- 不进行拦截的url （白名单）-->
+			<mvc:exclude-mapping path="/index.do"/>
+			<mvc:exclude-mapping path="/userLogin.do"/>
+			<mvc:exclude-mapping path="/accountCheck.do"/>
+			<mvc:exclude-mapping path="/registerRole.do"/>
+			<mvc:exclude-mapping path="/userRegister.do"/>
+			<mvc:exclude-mapping path="/paper.do"/>
+			<mvc:exclude-mapping path="/doctorNameCheck.do"/>
+			<mvc:exclude-mapping path="/doctorRegister.do"/>
+			<mvc:exclude-mapping path="/queryAllUser2Page.do"/>
+			<mvc:exclude-mapping path="/uploadExamine.do"/>
+			<mvc:exclude-mapping path="/queryAllUserAsk.do"/>
+			<mvc:exclude-mapping path="/queryMediByLabel.do"/>
+			<mvc:exclude-mapping path="/queryInquiryByUserId.do"/>
+			<mvc:exclude-mapping path="/userHeadImg.do"/>
+			<mvc:exclude-mapping path="/doctorHeadImg.do"/>
+			<mvc:exclude-mapping path="/medicineHeadImg.do"/>
+			<mvc:exclude-mapping path="/rootQueryAllMedi.do"/>
+			<mvc:exclude-mapping path="/delMedicine.do"/>
+			<mvc:exclude-mapping path="/rootQueryCheckedDoc.do"/>
+			<mvc:exclude-mapping path="/delDoctor.do"/>
+			<mvc:exclude-mapping path="/rootCheckDoctor.do"/>
+			<mvc:exclude-mapping path="/rootPassDoctor.do"/>
+			<mvc:exclude-mapping path="/rootQueryCourse.do"/>
+			<mvc:exclude-mapping path="/rootDelCourse.do"/>
+			<!--自定义的拦截器-->
+			<bean class="com.demo.interceptor.PowerCheckInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 视图解析器 如果action中是视图的逻辑名称，那么就必须要配置视图解析器 如果action中是视图的真实名称，那么就可选择配置视图解析器 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 路径前缀 -->
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<!-- 路径后缀 -->
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- 数据类型转换 -->
+	<bean id="conversionService"
+		  class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<list>
+				<bean class="com.demo.util.DateConverter" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- SpringMVC上传文件时，需要配置MultipartResolver处理器 --> 
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"> 
+        <!-- 指定所上传文件的总大小不能超过200000KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 --> 
+        <property name="maxUploadSize" value="200000000"/> 
+    </bean> 
+    
+    <!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的，而且此时还没有进入到Controller方法中 --> 
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"> 
+        <property name="exceptionMappings"> 
+            <props> 
+                <!-- 遇到MaxUploadSizeExceededException异常时，自动跳转到/WEB-INF/jsp/error/error.jsp页面 --> 
+                <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">error/error</prop> 
+            </props> 
+        </property> 
+    </bean>
+
+
+</beans>      

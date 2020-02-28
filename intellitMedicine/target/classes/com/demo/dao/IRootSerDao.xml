@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.dao.IRootSerDao">
+
+<!--	统计各类词云数量-->
+	<select id="getInquiryData" resultType="int">
+
+		select count(*) from onlineconsultingrec where inquiryData like '%${type}%'
+
+	</select>
+
+	<!--统计医师人数-->
+	<select id="queryyishi" resultType="int">
+		select count(*) from doctorres where title = "医师"
+	</select>
+
+	<!--统计主治医师人数-->
+	<select id="queryzhuzhiyishi" resultType="int">
+		select count(*) from doctorres where title = "主治医师"
+	</select>
+
+	<!--统计副主任医师人数-->
+	<select id="queryfuzhuren" resultType="int">
+		select count(*) from doctorres where title = "副主任医师"
+	</select>
+
+	<!--统计主任医师人数-->
+	<select id="queryzhuren" resultType="int">
+		select count(*) from doctorres where title = "主任医师"
+	</select>
+
+	<!--统计在线问诊未回复请求数-->
+	<select id="queryDoctorUnreplyed" resultType="int">
+	select count(*) from onlineconsultingrec where state = "未回复"
+	</select>
+
+    <!--统计已回复请求数-->
+	<select id="queryDoctorReplyed" resultType="int">
+	select count(*) from onlineconsultingrec where state = "已回复"
+	</select>
+
+	<!--统计医生人数	-->
+	<select id="getDoctorCount" resultType="int">
+		select  count(*) from doctorres;
+	</select>
+
+
+<!--统计用户人数	-->
+	<select id="getUserCount" resultType="int">
+		select  count(*) from user;
+	</select>
+
+	<!--查询各个年龄段的人数-->
+	<select id="ageCount" resultType="userAgeCount">
+		select sum(case
+		when timestampdiff(year,date,NOW())between 0 and 30
+		then 1
+		else 0
+		end
+		) as 'Low30'
+		,sum(case
+		when timestampdiff(year,date,NOW()) between 30 and 45
+		then 1
+		else 0
+		end
+		) as '_30_45'
+		,sum(case
+		when timestampdiff(year,date,NOW()) between 45 and 60
+		then 1
+		else 0
+		end
+		) as '_45_60'
+		,sum(case
+		when timestampdiff(year,date,NOW()) between 60 and 75
+		then 1
+		else 0
+		end
+		) as '_60_75'
+		,sum(case
+		when timestampdiff(year,date,NOW()) between 75 and 90
+		then 1
+		else 0
+		end
+		) as '_75_90'
+		,sum(case
+		when timestampdiff(year,date,NOW()) >90
+		then 1
+		else 0
+		end
+		) as 'Up90'
+		from user
+	</select>
+
+	<!--管理员删除课程-->
+	<delete id="deleteCourseById">
+		delete from course where courseId= #{courseId}
+	</delete>
+	<!--按分页条件查询某课程名的列表-->
+	<select id="queryCourseListByName" resultType="Course">
+        SELECT * FROM Course where courseName like '%${queryCourseName}%'
+        limit #{startRow},#{row4Page}
+    </select>
+	<select id="queryCourseCountByName" parameterType="String" resultType="int">
+		SELECT count(*) from course where courseName like '%${queryCourseName}%'
+	</select>
+
+
+	<!--按分页条件查询课程的列表-->
+	<select id="queryCourseList" resultType="Course">
+        SELECT * FROM Course
+        limit #{startRow},#{row4Page}
+    </select>
+
+	<!--查询课程总数-->
+	<select id="queryCourseCount" resultType="int">
+        SELECT count(*) FROM Course
+    </select>
+
+
+	<!--管理员添加课程-->
+	<insert id="addCourse" >
+		<selectKey keyProperty="courseId" order="AFTER" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID() as courseId
+		</selectKey>
+		Insert into course (courseName,courseType,coursePro,courseIntro,courseAdd) value (#{courseName},#{courseType},#{courseProFlag},#{courseIntro},#{courseAdd})
+	</insert>
+
+	<!-- 管理员审核医生通过   -->
+	<update id="updateRootPassDoctor">
+		update doctorres set check_2 =1 where doctorId = #{doctorId}
+	</update>
+
+	<!--管理查询未审核的医生列表	-->
+	<select id="queryDocUncheckedList" resultType="Doctor" >
+		SELECT * FROM doctorres  where check_2= 0
+        limit #{startRow},#{row4Page}
+	</select>
+
+	<!--管理查询未审核的医生总数-->
+	<select id="queryDocUncheckedCount" resultType="int" >
+		SELECT count(*) FROM doctorres  where check_2= 0
+	</select>
+
+	<!--管理员通过Id删除医生-->
+	<delete id="deleteDoctorById">
+		delete from doctorres where doctorId=#{doctorId}
+	</delete>
+
+	<!--按分页条件查询具有指定名字的医生总数-->
+	<select id="queryDocListByName"    resultType="Doctor">
+        SELECT * FROM doctorres  where doctorName like '%${queryDoctorName}%' and check_2= 1
+    </select>
+	<!--查询具有指定名字的医生列表-->
+	<select id="queryDocByNameCount"  parameterType="String"  resultType="int">
+        SELECT count(*) FROM  doctorres where doctorName like '%${queryDoctorName}%' and check_2= 1
+    </select>
+
+	<!--查询已注册医生的总数-->
+	<select id="queryDocCheckedCount" resultType="int">
+		select count(*) from doctorres where check_2= 1;
+	</select>
+	<!--按分页条件查询已注册医生的列表-->
+	<select id="queryDocCheckedList" resultType="Doctor">
+        SELECT * FROM doctorres  where check_2= 1
+        limit #{startRow},#{row4Page}
+    </select>
+
+	<!--  根据Id删除药品  -->
+	<delete id="deleteMedicineById" >
+          delete from medicine where medicineId=#{medicineId}
+	</delete>
+
+	<insert id="insertMedicine" >
+		<selectKey keyProperty="medicineId" order="AFTER" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID() as medicineId
+		</selectKey>
+		Insert into medicine (medicineName,medicineEffect,medicineLabel,medicinePro,headAdd) value (#{medicineName},#{medicineEffect},#{medicineLabel},#{medicinePro},#{medicineHeadImg1})
+	</insert>
+
+
+	<!--按分页条件查询具有指定名字的药品总数-->
+	<select id="queryMediByNameCount"  parameterType="String"  resultType="int">
+        SELECT count(*) FROM medicine  where medicineName like '%${queryMedicineName}%'
+    </select>
+	<!--按分页条件查询具有指定名字的药品-->
+	<select id="queryMediListByName" resultType="Medicine">
+        SELECT * FROM medicine  where medicineName like '%${queryMedicineName}%'
+        limit #{startRow},#{row4Page}
+    </select>
+
+
+
+<!--	韩-->
+
+	<!-- 查询用户上门服务申请 -->
+
+	<!-- 查询用户上门服务申请 -->
+
+
+	<select resultType="Assign" id="queryAllAssignList">Select * From visitapply where is_checked='false' limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllAssignCount">Select count(*) From visitapply where is_checked='false'</select>
+
+	<!-- 处理用户服务申请-->
+
+
+	<update id="deleteAssign" parameterType="int">Update visitapply Set is_checked ='true' Where applyId=#{applyId}; </update>
+
+	<!-- 查询用户上门服务申请 -->
+
+
+	<resultMap id="userResultMap" type="User">
+		<id column="userId" property="userId"/>
+		<result column="userName" property="userName"/>
+		<result column="phone" property="phone"/>
+		<result column="communityId" property="communityId"/>
+		<!-- 一对一关联映射 -->
+		<association property="community" javaType="Community">
+			<result column="communityId" property="communityId"/>
+			<result column="comName" property="comName"/>
+			<result column="comInfor" property="comInfor"/>
+		</association>
+	</resultMap>
+
+	<select id="queryAllUsersList2" resultMap="userResultMap">Select user.*,community.* From user,community Where user.communityId=#{communityId} and user.communityId=community.communityId limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int"    id="queryAllUsersCount2">Select count(*) From user Where communityId=#{communityId} </select>
+
+	<select resultMap="userResultMap"
+			id="queryAllUsersList">Select user.*,community.* From user,community Where user.communityId=community.communityId limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllUsersCount">Select count(*) From user </select>
+
+	<select resultMap="userResultMap"
+			id="queryAllUsersList3">Select user.*,community.* From user,community Where user.userName like '%${userName}%' and user.communityId=community.communityId limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllUsersCount3">Select count(*) From user Where userName like '%${userName}%' </select>
+
+
+	<!-- 查询所有社区 -->
+
+
+	<select resultType="Community" id="selectCommunityList">Select * From community </select>
+
+	<!-- 插入医疗机构信息 -->
+
+
+	<insert id="insertHospital">Insert into hospitalinf(hosName,hosDepartment,hospitalGen)value(#{hosName},#{hosDepartment},#{hospitalGen}); </insert>
+
+	<!-- 查询所有医疗机构 -->
+
+
+	<select resultType="Hospital" id="queryAllHospitalList">Select * From hospitalinf limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllHospitalCount">Select count(*) From hospitalinf </select>
+
+	<select resultType="Hospital" id="queryOneHosList">Select * From hospitalinf Where hosName like '%${hosName}%' limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryOneHosCount">Select count(*) From hospitalinf Where hosName like '%${hosName}%' </select>
+
+	<!-- 删除某个医疗机构-->
+
+
+	<delete id="deleteHospital" parameterType="int">Delete From hospitalinf Where hosId=#{hosId}; </delete>
+
+	<!-- 插入养老机构信息 -->
+
+
+	<insert id="insertPension">Insert into pensionage(pensionName,pensionIntro)value(#{pensionName},#{pensionIntro}); </insert>
+
+	<!-- 查询所有养老机构 -->
+
+
+	<select resultType="Pension" id="queryAllPensionList">Select * From pensionage limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllPensionCount">Select count(*) From pensionage </select>
+
+	<select resultType="Pension" id="queryOnePensionList">Select * From pensionage Where pensionName like '%${pensionName}%'limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryOnePensionCount">Select count(*) From pensionage Where pensionName like '%${pensionName}%' </select>
+
+	<!-- 删除某个养老机构-->
+
+
+	<delete id="deletePension" parameterType="int">Delete From pensionage Where pensionId=#{pensionId}; </delete>
+
+	<!-- 插入社区机构信息 -->
+
+
+	<insert id="insertCommun">Insert into community(comName,comInfor)value(#{comName},#{comInfor}); </insert>
+
+	<!-- 查询所有社区机构 -->
+
+
+	<select resultType="Community" id="queryAllCommunList">Select * From community limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryAllCommunCount">Select count(*) From community </select>
+
+	<select resultType="Community" id="queryOneCommunList">Select * From community Where comName like '%${comName}%' limit #{startRow},#{row4Page} </select>
+
+	<select resultType="int" id="queryOneCommunCount">Select count(*) From community Where comName like '%${comName}%'</select>
+
+	<!-- 删除某个养老机构-->
+
+
+	<delete id="deleteCommun" parameterType="int">Delete From community Where communityId=#{communityId}; </delete>
+</mapper>

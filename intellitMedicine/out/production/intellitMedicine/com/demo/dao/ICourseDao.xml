@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.dao.ICourseDao">
+
+    <!--    增加课程    -->
+    <insert id="addCourse">
+        Insert into course (courseName,courseType,coursePro,courseIntro,courseAdd) value (#{courseName},#{courseType},
+        #{coursePro},#{courseIntro},#{courseAdd});
+    </insert>
+
+    <resultMap type="Course" id="courseResultMap">
+
+        <id column="courseId" property="courseId"/>
+        <result column="courseName" property="courseName"/>
+        <result column="courseType" property="courseType"/>
+        <result column="coursePro" property="coursePro"/>
+        <result column="courseIntro" property="courseIntro"/>
+        <result column="courseAdd" property="courseAdd"/>
+
+    </resultMap>
+
+    <!--    查询课程    -->
+
+    <!--视频课程-->
+    <!--按条件分页查询所有用户-->
+    <select id="queryWavList" resultMap="courseResultMap">
+        Select * From course Where courseType = #{courseType} and coursePro= '0'
+        limit #{startRow},#{row4Page}
+    </select>
+    <!--按条件查询用户的数量-->
+    <select id="queryWavCourseCount" parameterType="String" resultType="int">
+        Select count(*) From course Where courseType = #{courseType} and coursePro= '0'
+
+    </select>
+
+    <select id="queryAllWavList" resultMap="courseResultMap">
+        Select * From course Where coursePro= '0'
+        limit #{startRow},#{row4Page}
+    </select>
+    <select id="queryAllWavCount" resultType="int">
+        Select count(*) From course Where coursePro='0'
+    </select>
+
+
+    <!--阅读课程-->
+    <!--按条件分页查询所有用户-->
+    <select id="queryReadList" resultMap="courseResultMap">
+        Select * From course Where courseType = #{courseType} and coursePro= '1'
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <!--按条件查询用户的数量-->
+    <select id="queryReadCourseCount" parameterType="String" resultType="int">
+        Select count(*) From course Where courseType = #{courseType} and coursePro= '1'
+
+    </select>
+
+    <select id="queryAllReadList" resultMap="courseResultMap">
+        Select * From course Where coursePro= '1'
+        limit #{startRow},#{row4Page}
+    </select>
+    <select id="queryAllReadCount" resultType="int">
+        Select count(*) From course Where coursePro='1'
+    </select>
+
+
+</mapper>

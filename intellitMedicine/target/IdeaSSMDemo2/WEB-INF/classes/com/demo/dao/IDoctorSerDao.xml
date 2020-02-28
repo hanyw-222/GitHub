@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.dao.IDoctorSerDao">
+
+    <update id="updateDocInf">
+update doctorres set doctorName=#{doctorName},sex=#{sex},birthday=#{birthday},phone=#{phone},homeAdd=#{homeAdd},hosId=#{hosId},graSchool=#{graSchool} ,department=#{department},headAdd=#{headAdd},title=#{title} where doctorId=#{doctorId};
+    </update>
+
+    <update id="updateReplyData">
+          update onlineconsultingrec set replyData = #{replyData},state= '已回复' where inquiryId = #{inquiryId}
+    </update>
+    <!-- 通过Id查询问诊单   -->
+    <select id="queryRecById1" resultType="Onlineconsultingrec">
+        select * from onlineconsultingrec where inquiryId = #{inquiryId}
+    </select>
+
+    <resultMap type="User" id="userResultMap">
+        <id column="userId" property="userId"/>
+        <result column="userName" property="userName"/>
+        <result column="sex" property="sex"/>
+        <result column="year" property="year"/>
+        <!-- 一对一关联映射 -->
+        <association property="onlineconsultingrec" javaType="Onlineconsultingrec" >
+            <result column="inquiryId" property="inquiryId"/>
+            <result column="state" property="state"/>
+        </association>
+    </resultMap>
+
+    <!-- 查询分页某医生的全部的在线咨询-->
+	<select id="queryUserAskList" resultMap="userResultMap">
+--      SELECT * FROM userlogin a LEFT JOIN userdetailed b ON a.id=b.userid
+        SELECT user.userId,user.userName,user.sex,user.year,onlineconsultingrec.inquiryId,onlineconsultingrec.state FROM user,onlineconsultingrec
+        where onlineconsultingrec.doctorId = #{doctorId} and user.userId = onlineconsultingrec.userId and onlineconsultingrec.state = '未回复'
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <!-- 查询某医生的所有咨询数量-->
+	<select id="queryAllUserAskCount"  resultType="int">
+        SELECT count(*) FROM onlineconsultingrec where doctorId = #{doctorId} and state = '未回复'
+    </select>
+
+
+    <!--韩-->
+<!--    &lt;!&ndash;    查询用户上门服务申请      &ndash;&gt;-->
+<!--    <select id="queryDocAssignList" resultType="Assign">-->
+<!--        Select * From visitapply Where doctorId=#{doctorId}-->
+<!--        limit #{startRow},#{row4Page}-->
+<!--    </select>-->
+
+    <select id="queryDocAssignCount" resultType="int">
+        Select count(*) From visitapply Where doctorId= #{doctorId}
+    </select>
+
+    <update id="updateDocMission" parameterType="int">
+        Update visitapply Set is_checked='false' Where applyId=#{applyId};
+    </update>
+
+    <delete id="deleteDocMission" parameterType="int">
+        Delete from visitapply Where applyId=#{applyId};
+    </delete>
+
+    <insert id="insertDocMission" >
+        insert into visitrec(doctorId,userId,recTime,visitData)
+        value (#{doctorId},#{userId},#{recTime},#{introduce});
+    </insert>
+
+    <resultMap type="Assign" id="assignResultMap">
+        <id column="applyId" property="applyId"/>
+        <result column="userId" property="userId"/>
+        <result column="doctorId" property="doctorId"/>
+        <result column="applyIntro" property="applyIntro"/>
+        <result column="applyTime" property="applyTime"/>
+        <result column="is_checked" property="is_checked"/>
+        <!-- 一对一关联映射 -->
+        <association property="user" javaType="User">
+            <result column="userId" property="userId"/>
+            <result column="userName" property="userName"/>
+            <result column="phone" property="phone"/>
+            <result column="homeAdd" property="homeAdd"/>
+        </association>
+    </resultMap>
+
+    <!--    查询用户上门服务申请      -->
+    <select id="queryDocAssignList" resultMap="assignResultMap">
+        Select  applyId,applyIntro,applyTime,doctorId,is_checked,user.* From visitapply,user
+        Where doctorId=#{doctorId} and visitapply.userId = user.userId
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <!-- 查询某医生的所有出诊数量-->
+    <resultMap id="recResultMap" type="record">
+        <id column="recId" property="recId"/>
+        <result column="userId" property="userId"/>
+        <result column="doctorId" property="doctorId"/>
+        <result column="visitData" property="visitData"/>
+        <result column="recTime" property="recTime"/>
+
+        <!-- 一对一关联映射 -->
+        <association property="user" javaType="User">
+            <result column="userId" property="userId"/>
+            <result column="userName" property="userName"/>
+        </association>
+    </resultMap>
+    <select id="queryAllRecordList" resultMap="recResultMap">
+        SELECT recId,doctorId,visitData,recTime,user.* FROM visitrec,user Where doctorId= #{doctorId} and user.userId=visitrec.userId
+        limit #{startRow},#{row4Page}
+    </select>
+
+    <select id="queryAllRecordCount" resultType="int">
+        Select count(*) From visitrec Where doctorId= #{doctorId};
+    </select>
+
+
+
+</mapper>

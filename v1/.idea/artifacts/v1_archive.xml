@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="war" build-on-make="true" name="v1 archive">
+    <output-path>$USER_HOME$/Desktop</output-path>
+    <root id="archive" name="v1 archive.war">
+      <element id="artifact" artifact-name="v1" />
+      <element id="dir-copy" path="$PROJECT_DIR$/WebRoot" />
+    </root>
+  </artifact>
+</component>
